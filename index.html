@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Thesis Experiment 1</title>
+
+    <!-- Core jsPsych -->
+    <link rel="stylesheet" href="jspsych.css">
+    <script src="jspsych.js"></script>
+
+    <!-- Plugins -->
+    <script src="plugins/plugin-html-button-response.js"></script>
+    <script src="plugins/plugin-audio-button-response.js"></script>
+    <script src="plugins/plugin-html-slider-response.js"></script>
+    <script src="plugins/plugin-html-keyboard-response.js"></script>
+    <script src="plugins/plugin-survey-html-form.js"></script>
+
+    <style>
+        .circle-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .jspsych-content {
+            max-width: 1200px;
+            margin: auto;
+        }
+        .circle-option input[type="radio"] {
+            display: none;
+        }
+        .circle-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        .circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid black;
+            margin-bottom: 5px;
+        }
+        .circle-option input[type="radio"]:checked + .circle {
+            background-color: black;
+        }
+        .circle-label {
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getDatabase, ref, push, set } 
+from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBv4ci5OaVw0RhixEB3GBGsmvCqZGWAYYg",
+  authDomain: "experiment-2-b7b70.firebaseapp.com",
+  projectId: "experiment-2-b7b70",
+  storageBucket: "experiment-2-b7b70.firebasestorage.app",
+  messagingSenderId: "448036081606",
+  appId: "1:448036081606:web:9b8f118c00ccbd66ef2cc7",
+  measurementId: "G-6ML7R2GKJE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.saveTrialData = async function(data) {
+    try {
+        const participantID = data.participant;
+
+        const newRef = push(ref(db, `participants/${participantID}/trials`));
+        await set(newRef, data);
+
+        console.log("Saved:", data);
+    } catch (e) {
+        console.error("Error saving data:", e);
+    }
+};
+</script>
+
+<!-- Load experiment -->
+<script src="experiment.js"></script>
+
+</body>
+</html>
