@@ -116,6 +116,7 @@ function getAudioFile(candidate) {
 const scenarios = [
     {
         name: "ECE Scenario 1",
+        company: "Little Steps Early Learning Centre",
         id: "ece1",
         jobDescription: `
             <h2>Early Childhood Educator (ECE) Position</h2>
@@ -135,6 +136,7 @@ const scenarios = [
     },
     {
         name: "ECE Scenario 2",
+        company: "Early Minds Academy",
         id: "ece2",
         jobDescription: `
             <h2>Early Childhood Educator (ECE) Position</h2>
@@ -154,6 +156,7 @@ const scenarios = [
     },
     {
         name: "CEO Scenario 1",
+        company: "NovaLink",
         id: "ceo1",
         jobDescription: `
             <h2>Chief Executive Officer (CEO) Position</h2>
@@ -172,6 +175,7 @@ const scenarios = [
     },
     {
         name: "CEO Scenario 2",
+        company: "GreenPath",
         id: "ceo2",
         jobDescription: `
             <h2>Chief Executive Officer (CEO) Position</h2>
@@ -192,42 +196,6 @@ const scenarios = [
         ]
     }
 ];
-
-/* ---------- FUNCTION TO CREATE DESCRIPTION-ONLY TRIALS WITH CIRCLE RATINGS ---------- */
-function createDescriptionRatingTrial(candidate, scenario) {
-    // Build black circle buttons
-    const optionsHtml = Array.from({length: 7}, (_, i) => `
-        <label class="circle-option">
-            <input type="radio" name="rating" value="${i+1}" required>
-            <span class="circle"></span>
-            <div class="circle-label">${i+1}</div>
-        </label>
-    `).join("");
-
-    return {
-        type: jsPsychSurveyHtmlForm,
-        preamble: `
-            <div style="padding: 0 20px;">
-                <h2>${scenario.name}</h2>
-                ${scenario.jobDescription}
-            </div>
-            <hr>
-            <strong>${candidate.name}</strong>: ${candidate.description}<br><br>
-            <p style="margin-top: 15px;">Rate how likely you are to recommend this candidate to be hired on a scale from 1 to 7 (1 = Not Likely, 7 = Very Likely).</p>
-        `,
-        html: `<div class="circle-container">${optionsHtml}</div>`,
-        button_label: "Submit",
-        
-        data: {scenario: scenario.id, candidate: candidate.name, phase: "text"},
-    
-        on_finish: function(data) {
-            data.participant = PARTICIPANT_ID;
-            data.rating = data.response.rating;
-            delete data.response;
-            saveTrialData(data);
-        }
-    };
-}
 
 function createAudioRatingTrial(candidate, scenario) {
 
@@ -264,13 +232,17 @@ function createAudioRatingTrial(candidate, scenario) {
         type: jsPsychSurveyHtmlForm,
         preamble: `
             <div style="padding: 0 20px;">
-                <h2>${scenario.name}</h2>
+                <h2>${scenario.company}</h2>
+
+                <div style="color: #777; opacity: 0.85;"
+                    ${scenario.jobDescription}
+                </div>
             </div>
             <hr>
 
-            <p><strong>Next, you will hear the same candidate introduce themselves:</strong></p>
+            <p><strong>You will now hear a job candidate introduce themselves:</strong></p>
    
-            <div style="margin: 10px 0; padding: 10px; background-color: #f2f2f2; color: #555; border-radius: 5px;">
+            <div style="margin-top: 10px; margin-bottom: 10px;">
                 <strong>${candidate.name}</strong><br><br>
             </div>
 
@@ -279,7 +251,7 @@ function createAudioRatingTrial(candidate, scenario) {
             </audio>
 
             <p style="margin-top: 15px;">
-                Based on all available information, rate how likely you are to recommend this candidate to be hired on a scale from 1 to 7 (1 = Not Likely, 7 = Very Likely).
+                Based on the information provided, rate how likely you are to recommend this candidate to be hired on a scale from 1 to 7 (1 = Not Likely, 7 = Very Likely).
             </p>
             
             <p style="font-style: italic; color: #666; margin-top: 5px;">
@@ -338,16 +310,6 @@ function createAudioRatingTrial(candidate, scenario) {
     };
 }
 
-function createAudioTransition() {
-    return {
-        type: jsPsychHtmlKeyboardResponse,
-        stimulus: `
-            <p>Next, you will hear the same candidate introduce themselves.</p>
-            <p>Press <strong>SPACE</strong> to continue.</p>
-        `,
-        choices: [" "]
-    };
-}
 // Use all 4 scenarios and shuffle
 const randomizedScenarios = jsPsych.randomization.shuffle(scenarios);
 
@@ -546,7 +508,7 @@ timeline.push({
         <p>Imagine you are a recruiter at NorthStar Talent Collective. NorthStar helps in the identification and recruitment of employees ranging from CEOs to school teachers.</p>
         <p>You are in charge of reviewing candidate profiles for several different portfolios.</p>
         <p>Two companies are looking to hire a new <strong>Chief Executive Officer (CEO)</strong> and two companies are looking to hire a new <strong>Early Childhood Educator (ECE)</strong>.</p>
-        <p>You will be presented with information about each company including the qualifications they are looking for in a new employee, and the profiles of three candidates applying for each position.</p>
+        <p>You will be presented with information about each company including the qualifications they are looking for in a new employee, and audio recordings of three candidates applying for each position.</p>
         <p>Your job is to evaluate each candidate and indicate how likely you would be to recommend them for the position considering the companies' requirements.</p>
         <p>Press <strong>SPACE</strong> to begin.</p>
     `,
@@ -585,12 +547,6 @@ randomizedScenarios.forEach((scenario, index) => {
     const randomizedCandidates = jsPsych.randomization.shuffle(scenario.candidates);
 
     randomizedCandidates.forEach(candidate => {
-
-        // TEXT rating
-        timeline.push(createDescriptionRatingTrial(candidate, scenario));
-
-        // Transition
-        timeline.push(createAudioTransition());
 
         // AUDIO rating
         timeline.push(createAudioRatingTrial(candidate, scenario));
